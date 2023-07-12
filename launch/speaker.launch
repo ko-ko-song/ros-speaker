@@ -1,0 +1,8 @@
+<launch>
+    <!-- Set default namespace to "robot1" -->
+    <arg name="namespace" default="robot1" />
+
+    <group ns="$(arg namespace)">
+        <node pkg="speaker" type="speaker.py" name="speaker"/>
+    </group>
+</launch>
