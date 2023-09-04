@@ -3,6 +3,7 @@ import rospy
 from std_msgs.msg import String
 from pygame import mixer
 import rospkg
+import os
 
 
 
@@ -13,9 +14,9 @@ class Speaker:
         rospy.Subscriber("speaker", String, self.playSoundCallback)
 
         # Get the path to the current package
-        rospack = rospkg.RosPack()
-        package_path = rospack.get_path('speaker')
-
+        # rospack = rospkg.RosPack()
+        # package_path = rospack.get_path('speaker')
+        package_path = os.getcwd()
         # Define the sound file paths
         self.sound_path = package_path + "/sounds/"
 
@@ -24,7 +25,7 @@ class Speaker:
         if mixer.music.get_busy():  # if a song is currently playing
             mixer.music.stop()  # stop that song
         mixer.music.load(self.sound_path + data.data +".mp3")
-        mixer.music.play(-1)  # play the new song indefinitely
+        mixer.music.play(1)  # play the new song indefinitely
 
 if __name__ == '__main__':
     sp = Speaker()
