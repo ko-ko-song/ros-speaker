@@ -8,10 +8,11 @@ import time
 
 
 class Speaker:
-    def __init__(self):
+    def __init__(self, namespace):
+        
         rospy.init_node('speaker', anonymous=True)
         mixer.init()
-        rospy.Subscriber("speaker", String, self.playSoundCallback)
+        rospy.Subscriber("/"+ namespace+"/speaker", String, self.playSoundCallback)
 
         
         # rospack = rospkg.RosPack()
@@ -154,8 +155,13 @@ class Speaker:
         self.isPrioritySoundPlaying = False
 
 
-
+import argparse
 if __name__ == '__main__':
-    sp = Speaker()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ns", type=str, required=True, help="Namespace for the robot")
+    args = parser.parse_args()
+    namespace = args.ns
+
+    sp = Speaker(namespace)
     rospy.spin()
 
