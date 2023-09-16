@@ -14,6 +14,7 @@ class Speaker:
         mixer.init()
         rospy.Subscriber("/"+ namespace+"/speaker", String, self.playSoundCallback)
 
+        rospy.Subscriber("/"+ namespace+"/controller/state", String, self.playSoundCallback)
         
         # rospack = rospkg.RosPack()
         # package_path = rospack.get_path('speaker')
@@ -138,6 +139,12 @@ class Speaker:
 
         elif data.data =="soundOff":
             mixer.music.stop()
+
+        elif data.data =="DISCONNECTED":
+            mixer.music.stop()
+
+        elif data.data =="CONNECTED":
+            return
 
         else :
             rospy.logwarn(f" undefined meg received on : {data.data}")
