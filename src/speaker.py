@@ -210,7 +210,6 @@ class Speaker:
 
     def playRobotErrorSound(self):
         self.isPrioritySoundPlaying = True
-        self.state = "robotError"
         
         self.playEffectSound('alarm.mp3', 1)
         
