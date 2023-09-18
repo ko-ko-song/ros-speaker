@@ -22,13 +22,11 @@ class Speaker:
         # Define the sound file paths
         self.sound_path = package_path + "/sounds/"
         self.isPrioritySoundPlaying = False
-        self.playingSound="none"
-        self.previousSound = "none"
+        self.state="none"
 
     def playSoundCallback(self, data):
         rospy.loginfo(f"Received on : {data.data}")
-        rospy.loginfo(f"[previous sound] Received on : {self.previousSound}")
-        rospy.loginfo(f"[playing sound] Received on : {self.playingSound}")
+        rospy.loginfo(f"[state] : {self.state}")
 
 
         while self.isPrioritySoundPlaying:
@@ -36,21 +34,17 @@ class Speaker:
 
 
         if data.data == "moving":
-            if self.playingSound == "elevatorBoarding" or self.playingSound == "elevatorGettingOff":
+            if self.state == "elevatorBoarding" or self.state == "elevatorGettingOff":
                 return
             
             self.isPrioritySoundPlaying = False
-            self.playingSound = "moving"
+            self.state = "moving"
             self.playEffectSound('moving.wav', -1)
-            self.previousSound = "moving"
             
         elif data.data == "emergencyStop":
             self.isPrioritySoundPlaying = False
-            self.playingSound = "emergencyStop"
+            self.state = "emergencyStop"
             self.playEffectSound('emo.wav', -1)
-            self.previousSound = "emergencyStop"
-
-            
 
         elif data.data == "robotError":
             self.playRobotErrorSound()
@@ -58,7 +52,7 @@ class Speaker:
 
         elif data.data == "lowBattery":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "lowBattery"
+            self.state = "lowBattery"
             
             self.playEffectSound('alarm.mp3', 1)
             
@@ -66,12 +60,12 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_lowBattery.mp3', 1)
-            self.previousSound = "lowBattery"
+            
 
             
         elif data.data == "cannotMove":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "cannotMove"
+            self.state = "cannotMove"
 
             self.playEffectSound('warning.mp3', 1)
             
@@ -79,41 +73,37 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_cannotMove.mp3', 1)
-            self.previousSound = "cannotMove"
 
 
         elif data.data == "obstacle":
+            self.state ="obstacle"
+
             self.isPrioritySoundPlaying = False
-            self.playingSound = "obstacle"
 
             self.playEffectSound('obstacle.wav', 1)
-            self.previousSound = "obstacle"
 
 
         elif data.data == "deliveryCancel":
+            self.state ="deliveryCancel"
             self.isPrioritySoundPlaying = True
-            self.playingSound = "deliveryCancel"
-
             self.playEffectSound('cancel.mp3', 1)
             
             while mixer.music.get_busy():
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_deliveryCancel.mp3', 1)
-            self.previousSound = "deliveryCancel"
 
 
         elif data.data == "deliveryPause":
             self.isPrioritySoundPlaying = False
-            self.playingSound = "deliveryPause"
+            self.state = "deliveryPause"
 
             self.playEffectSound('pause.wav', -1)
-            self.previousSound = "deliveryPause"
 
 
         elif data.data == "deliveryReady":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "deliveryReady"
+            self.state = "deliveryReady"
 
             self.playVoiceSound('_voice_deliveryReady.mp3', 1)       
 
@@ -121,12 +111,11 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('request.mp3', 3)
-            self.previousSound = "deliveryReady"
 
 
         elif data.data == "elevatorBoarding":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "elevatorBoarding"
+            self.state = "elevatorBoarding"
             
             self.playVoiceSound('_voice_elevatorBoarding.mp3', 1)
             
@@ -134,12 +123,11 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('alarm.mp3', -1)
-            self.previousSound = "elevatorBoarding"
 
 
         elif data.data == "elevatorGettingOff":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "elevatorGettingOff"
+            self.state = "elevatorGettingOff"
 
             self.playVoiceSound('_voice_elevatorGettingOff.mp3', 1)
             
@@ -147,12 +135,11 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('alarm.mp3', -1)
-            self.previousSound = "elevatorGettingOff"
 
 
         elif data.data == "deliveryArrival":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "deliveryArrival"
+            self.state = "deliveryArrival"
 
             self.playEffectSound('arrived.wav', 1)
             
@@ -160,12 +147,11 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_deliveryArrival.mp3', 1)
-            self.previousSound = "deliveryArrival"
 
 
         elif data.data == "deliveryPickupRequest":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "deliveryPickupRequest"
+            self.state = "deliveryPickupRequest"
             
             self.playVoiceSound('_voice_deliveryPickupRequest.mp3', 1)
             
@@ -173,12 +159,11 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('request.mp3', -1)
-            self.previousSound = "deliveryPickupRequest"
 
 
         elif data.data == "returnStart":
             self.isPrioritySoundPlaying = True
-            self.playingSound = "returnStart"
+            self.state = "returnStart"
 
             self.playEffectSound('finish.wav', 1)
             
@@ -186,23 +171,24 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_returnStart.mp3', 1)
-            self.previousSound = "returnStart"
 
 
         elif data.data =="soundOff":
-            self.playingSound = "soundOff"
+            self.state = "soundOff"
             mixer.music.stop()
-            self.previousSound = "soundOff"
 
         elif data.data =="DISCONNECTED":
+            if self.state == "DISCONNECTED" or self.state == "wifi_disconnection":
+                return
+            self.state ="DISCONNECTED"
             self.playRobotErrorSound()
-
 
         elif data.data =="wifi_disconnection":
+            self.state ="wifi_disconnection"
             self.playRobotErrorSound()
 
-
         elif data.data =="CONNECTED":
+            self.state ="CONNECTED"
             return
 
         else :
@@ -216,16 +202,15 @@ class Speaker:
     def playVoiceSound(self, soundName, playCount):
         mixer.music.load(self.sound_path + soundName)
         mixer.music.play(playCount)
+        
         while mixer.music.get_busy():
             time.sleep(0.1)
         self.isPrioritySoundPlaying = False
+        
 
     def playRobotErrorSound(self):
-        if self.playingSound == "robotError" or self.previousSound =="robotError":
-            return
-        
         self.isPrioritySoundPlaying = True
-        self.playingSound = "robotError"
+        self.state = "robotError"
         
         self.playEffectSound('alarm.mp3', 1)
         
@@ -233,7 +218,19 @@ class Speaker:
             time.sleep(0.1)
 
         self.playVoiceSound('_voice_robotError.mp3', 1)
-        self.previousSound = "robotError"
+
+    def clean_filename(self, filename):
+        # 확장자 제거
+        if filename.endswith('.mp3'):
+            filename = filename[:-4]
+        elif filename.endswith('.wav'):
+            filename = filename[:-4]
+
+        # 앞의 _voice_ 제거
+        if filename.startswith('_voice_'):
+            filename = filename[7:]
+
+        return filename        
 
 import argparse
 if __name__ == '__main__':
