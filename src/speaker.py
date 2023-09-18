@@ -13,9 +13,9 @@ class Speaker:
         rospy.init_node('speaker', anonymous=True)
         mixer.init()
         rospy.Subscriber("/"+ namespace+"/speaker", String, self.playSoundCallback)
-
         rospy.Subscriber("/"+ namespace+"/controller/state", String, self.playSoundCallback)
-        
+        rospy.Subscriber("/"+ namespace+"/wifiState", String, self.playSoundCallback)
+
         # rospack = rospkg.RosPack()
         # package_path = rospack.get_path('speaker')
         package_path = os.getcwd()
@@ -23,10 +23,13 @@ class Speaker:
         self.sound_path = package_path + "/sounds/"
         self.isPrioritySoundPlaying = False
         self.playingSound="none"
-
+        self.previousSound = "none"
 
     def playSoundCallback(self, data):
         rospy.loginfo(f"Received on : {data.data}")
+        rospy.loginfo(f"[previous sound] Received on : {self.previousSound}")
+        rospy.loginfo(f"[playing sound] Received on : {self.playingSound}")
+
 
         while self.isPrioritySoundPlaying:
             time.sleep(0.1)
@@ -39,22 +42,19 @@ class Speaker:
             self.isPrioritySoundPlaying = False
             self.playingSound = "moving"
             self.playEffectSound('moving.wav', -1)
+            self.previousSound = "moving"
             
         elif data.data == "emergencyStop":
             self.isPrioritySoundPlaying = False
             self.playingSound = "emergencyStop"
             self.playEffectSound('emo.wav', -1)
+            self.previousSound = "emergencyStop"
+
+            
 
         elif data.data == "robotError":
-            self.isPrioritySoundPlaying = True
-            self.playingSound = "robotError"
-            
-            self.playEffectSound('alarm.mp3', 1)
-            
-            while mixer.music.get_busy():
-                time.sleep(0.1)
+            self.playRobotErrorSound()
 
-            self.playVoiceSound('_voice_robotError.mp3', 1)
 
         elif data.data == "lowBattery":
             self.isPrioritySoundPlaying = True
@@ -66,6 +66,8 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_lowBattery.mp3', 1)
+            self.previousSound = "lowBattery"
+
             
         elif data.data == "cannotMove":
             self.isPrioritySoundPlaying = True
@@ -77,12 +79,16 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_cannotMove.mp3', 1)
+            self.previousSound = "cannotMove"
+
 
         elif data.data == "obstacle":
             self.isPrioritySoundPlaying = False
             self.playingSound = "obstacle"
 
             self.playEffectSound('obstacle.wav', 1)
+            self.previousSound = "obstacle"
+
 
         elif data.data == "deliveryCancel":
             self.isPrioritySoundPlaying = True
@@ -94,12 +100,16 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_deliveryCancel.mp3', 1)
+            self.previousSound = "deliveryCancel"
+
 
         elif data.data == "deliveryPause":
             self.isPrioritySoundPlaying = False
             self.playingSound = "deliveryPause"
 
             self.playEffectSound('pause.wav', -1)
+            self.previousSound = "deliveryPause"
+
 
         elif data.data == "deliveryReady":
             self.isPrioritySoundPlaying = True
@@ -111,6 +121,8 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('request.mp3', 3)
+            self.previousSound = "deliveryReady"
+
 
         elif data.data == "elevatorBoarding":
             self.isPrioritySoundPlaying = True
@@ -122,6 +134,8 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('alarm.mp3', -1)
+            self.previousSound = "elevatorBoarding"
+
 
         elif data.data == "elevatorGettingOff":
             self.isPrioritySoundPlaying = True
@@ -133,6 +147,8 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('alarm.mp3', -1)
+            self.previousSound = "elevatorGettingOff"
+
 
         elif data.data == "deliveryArrival":
             self.isPrioritySoundPlaying = True
@@ -144,6 +160,8 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_deliveryArrival.mp3', 1)
+            self.previousSound = "deliveryArrival"
+
 
         elif data.data == "deliveryPickupRequest":
             self.isPrioritySoundPlaying = True
@@ -155,6 +173,8 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playEffectSound('request.mp3', -1)
+            self.previousSound = "deliveryPickupRequest"
+
 
         elif data.data == "returnStart":
             self.isPrioritySoundPlaying = True
@@ -166,13 +186,21 @@ class Speaker:
                 time.sleep(0.1)
 
             self.playVoiceSound('_voice_returnStart.mp3', 1)
+            self.previousSound = "returnStart"
+
 
         elif data.data =="soundOff":
             self.playingSound = "soundOff"
             mixer.music.stop()
+            self.previousSound = "soundOff"
 
         elif data.data =="DISCONNECTED":
-            mixer.music.stop()
+            self.playRobotErrorSound()
+
+
+        elif data.data =="wifi_disconnection":
+            self.playRobotErrorSound()
+
 
         elif data.data =="CONNECTED":
             return
@@ -192,6 +220,20 @@ class Speaker:
             time.sleep(0.1)
         self.isPrioritySoundPlaying = False
 
+    def playRobotErrorSound(self):
+        if self.playingSound == "robotError" or self.previousSound =="robotError":
+            return
+        
+        self.isPrioritySoundPlaying = True
+        self.playingSound = "robotError"
+        
+        self.playEffectSound('alarm.mp3', 1)
+        
+        while mixer.music.get_busy():
+            time.sleep(0.1)
+
+        self.playVoiceSound('_voice_robotError.mp3', 1)
+        self.previousSound = "robotError"
 
 import argparse
 if __name__ == '__main__':
