@@ -177,15 +177,15 @@ class Speaker:
             self.state = "soundOff"
             mixer.music.stop()
 
-        elif data.data =="DISCONNECTED":
-            if self.state == "DISCONNECTED" or self.state == "wifi_disconnection":
-                return
-            self.state ="DISCONNECTED"
-            self.playRobotErrorSound()
+        # elif data.data =="DISCONNECTED":
+        #     if self.state == "DISCONNECTED" or self.state == "wifi_disconnection":
+        #         return
+        #     self.state ="DISCONNECTED"
+        #     self.playRobotErrorSound()
 
-        elif data.data =="wifi_disconnection":
-            self.state ="wifi_disconnection"
-            self.playRobotErrorSound()
+        # elif data.data =="wifi_disconnection":
+        #     self.state ="wifi_disconnection"
+        #     self.playRobotErrorSound()
 
         elif data.data =="CONNECTED":
             self.state ="CONNECTED"
